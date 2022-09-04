@@ -1,5 +1,6 @@
 flake-utils: {
   yarn2nix,
+  yarn2nix-moretea,
   mkYarnPackage,
   nodePackages,
   python3,
@@ -43,22 +44,35 @@ flake-utils: {
     '';
   };
 
+  # mkBetterYarnPkg = (yarn2nix-moretea.override { nodejs = nodejs-14_x; }).mkYarnPackage;
+
   build = mkYarnPackage {
     name = "tabry-thing";
     src = "${tabryRepo}/treesitter";
     patches = [./yarn.patch];
     packageJSON = ./package.json;
     yarnLock = ./yarn.lock;
+      buildInputs = [ python3 ];
     pkgConfig.tree-sitter = {
       buildInputs = [ nodePackages.node-gyp python3 ];
       postInstall = ''
         # tried both of these:
-        # ${nodejs}/lib/node_modules/npm/bin/node-gyp-bin/node-gyp --nodedir ${nodejs} configure
-        # ${nodejs}/lib/node_modules/npm/bin/node-gyp-bin/node-gyp --nodedir ${nodejs} build
-        node-gyp --nodedir=${nodeHeaders} --target=v16.16.0 configure
-        node-gyp --nodedir=${nodeHeaders} --target=v16.16.0 rebuild
+        # ls -al node_modules/.bin
+        # cat ./node_modules/.bin/prebuild-install
+        # node ./node_modules/.bin/prebuild-install
+        ${nodejs}/lib/node_modules/npm/bin/node-gyp-bin/node-gyp --nodedir ${nodejs} configure
+        ${nodejs}/lib/node_modules/npm/bin/node-gyp-bin/node-gyp --nodedir ${nodejs} rebuild
+        # return 1;
+        # node-gyp --nodedir=${nodeHeaders} --target=v16.16.0 configure
+        # node-gyp --nodedir=${nodeHeaders} --target=v16.16.0 rebuild
       '';
     };
+    postBuild = ''
+      cd deps/tree-sitter-tabry
+      ls -al
+      ${nodejs}/lib/node_modules/npm/bin/node-gyp-bin/node-gyp --nodedir ${nodejs} --python=${python3}/bin/python3 rebuild
+      cd ../../
+    '';
   };
 
   buildBasic = stdenv.mkDerivation {
@@ -85,9 +99,9 @@ flake-utils: {
   };
 
   tabryc = flake-utils.lib.mkApp {
-    drv = tabrycEnv;
+    drv = build;
     name = "tabryc";
-    exePath = "tabry-compile.js";
+    exePath = "/libexec/tree-sitter-tabry/deps/tree-sitter-tabry/tabry-compile.js";
   };
 
   in {
