@@ -1,6 +1,6 @@
 { stdenv, bundlerEnv, ruby, lib, coreutils, ... }:
 let
-  # TODO: would be easier to put this directly into the cloudgate repo
+  # TODO: would be easier to put this directly into the tabry repo
   gems = bundlerEnv {
     name = "tabry-env";
     inherit ruby;
