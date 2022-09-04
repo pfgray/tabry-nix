@@ -12,13 +12,12 @@
         let
           pkgs = nixpkgs.legacyPackages."${system}";
           tabry = import ./default.nix pkgs;
-          tabryLang = import ./tabry-lang/tabry-lang.nix flake-utils pkgs;
+          tabryLang = import ./tabry-lang flake-utils pkgs;
         in {
           packages = {
             # defaults
             tabry = tabry;
             tabryBuild = tabryLang.build;
-            tabryBuildBasic = tabryLang.buildBasic;
           };
           apps = {
             tabryc = tabryLang.tabryc;
