@@ -13,6 +13,7 @@
           pkgs = nixpkgs.legacyPackages."${system}";
           tabry = import ./default.nix pkgs;
           tabryLang = import ./tabry-lang flake-utils pkgs;
+          tabryHmModule = import ./tabry-hm-module pkgs;
         in {
           packages = {
             # defaults
@@ -21,6 +22,9 @@
           };
           apps = {
             tabryc = tabryLang.tabryc;
+          };
+          homeModules = {
+            tabry = tabryHmModule;
           };
         }
     );
